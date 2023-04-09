@@ -23,21 +23,6 @@ def yellow_func(words_list, letter, position):
               letter in d.get('word') and letter != d.get('word')[position]]
     return words_list
 
-def yellow_func2(words_list, letter, position):
-    result = []
-    for entry in words_list:
-        word = entry['word']
-        # if letter not in word or letter == word[position]:
-        #     pass
-        if letter not in word:
-            print('\tIgngored: {} not in {}'.format(letter, word))
-        elif letter == word[position]:
-            print('\tIgnored: {} in position {} of {}'.format(letter, position, word))
-        else:
-            # print('\t{} is in {} and not in position {}'.format(letter, word, position))
-            result.append(entry)
-    return result
-
 def remove_greys(greys, candidate_list):
     for letter in greys:
         candidate_list[:] = [d for d in candidate_list if letter not in d.get('word')]
