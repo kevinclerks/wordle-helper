@@ -1,6 +1,6 @@
 import requests
 import json
-import sys
+from colorama import Fore, Style
 
 def send_query(query_string):
     max_res = '500'
@@ -8,58 +8,51 @@ def send_query(query_string):
     print(url)
     response = requests.get(url)
     dlist = json.loads(response.text)
-    dtuple = [tuple(d.values()) for d in dlist]
-    dtuple.reverse()
-    return dtuple
+    dlist.reverse()
+    return dlist
 
-def print_results(words):
+def print_results(words_list):
     print('----Results-----')
-    for word in words:
-        print('{} : {}'.format(word[0], word[1]))
+    for entry in words_list:
+        print('{} : {}'.format(entry['word'], entry['score']))
     print('----------------')
-    print(str(len(words)) + ' possible words')
+    print(str(len(words_list)) + ' possible words')
 
-def yellow_func(words, letter, position):
+def yellow_func(words_list, letter, position):
+    words_list[:] = [d for d in words_list if 
+              letter in d.get('word') and letter != d.get('word')[position]]
+    return words_list
+
+def yellow_func2(words_list, letter, position):
     result = []
-    # yellow = input('Yellow letters')
-    for tuple in words:
-        word = tuple[0]
-        if letter not in word or letter == word[position]:
-            pass
-        # if letter not in word:
-        #     print('\tIgnored: {} not in {}'.format(letter, word))
-        # elif letter == word[position]:
-        #     print('\tIgnored: {} in position {} of {}'.format(letter, position, word))
+    for entry in words_list:
+        word = entry['word']
+        # if letter not in word or letter == word[position]:
+        #     pass
+        if letter not in word:
+            print('\tIgngored: {} not in {}'.format(letter, word))
+        elif letter == word[position]:
+            print('\tIgnored: {} in position {} of {}'.format(letter, position, word))
         else:
             # print('\t{} is in {} and not in position {}'.format(letter, word, position))
-            result.append(tuple)
+            result.append(entry)
     return result
 
-def remove_greys(greys, words):
+def remove_greys(greys, candidate_list):
     for letter in greys:
-        for tuple in words:
-            word = tuple[0]
-            # print('Checking for {} in {}'.format(letter,word))
-            if letter in word:
-                words.remove(tuple)
-                # print('\tRemoved {}. It has a {}'.format(word, letter))
-    return words
+        candidate_list[:] = [d for d in candidate_list if letter not in d.get('word')]
+
+    return candidate_list
 
 # GREEN LETTERS
-lookup = input("Green letters, question marks: ")
-
-# if len(sys.argv) == 2:
-#     lookup = sys.argv[1]
-# else:
-#     lookup = input("Green letters, question marks: ")
-
+lookup = input(Fore.GREEN + "Green letters, question marks: " + Style.RESET_ALL)
 poss_words = send_query(lookup)
 print_results(poss_words)
 
 while True:
     # YELLOW LETTERS
     while True:
-        letter = input('Enter the yellow letter: ')
+        letter = input(Fore.YELLOW + 'Enter the yellow letter: '+ Style.RESET_ALL)
         if not letter:
             break
         else:
@@ -69,7 +62,7 @@ while True:
 
     # GREY LETTERS
     while True:
-        greys = set(input('Enter the grey letters: '))
+        greys = input(Style.DIM + 'Enter the grey letters: '+ Style.RESET_ALL)
         if not greys:
             break
         else:
